@@ -1,7 +1,12 @@
 # URL Shortener API
 
-REST API for URL shortening, developed as a technical challenge.  
-Built with **Node.js (NestJS)**, **TypeORM**, **PostgreSQL**, **Docker** and **pnpm**.
+![Node](https://img.shields.io/badge/node-20-green)
+![NestJS](https://img.shields.io/badge/nestjs-backend-red)
+![Postgres](https://img.shields.io/badge/postgres-db-blue)
+
+REST API for URL shortening, developed as a backend technical challenge focusing on scalability, clean architecture and best practices.
+
+Built with **Node.js (NestJS)**, **TypeORM**, **PostgreSQL** and **Docker**. Dependency management powered by **pnpm**.
 
 
 ## Tech Stack
@@ -22,7 +27,7 @@ Built with **Node.js (NestJS)**, **TypeORM**, **PostgreSQL**, **Docker** and **p
 - pnpm >= 10
 - Docker + Docker Compose
 
-## Quick start
+## Quick start (Local development)
 
 1. **Clone and install the dependencies**
 ```bash
@@ -36,9 +41,9 @@ pnpm install
 cp .env.example .env
 ```
 
-3. **Initialize the dependencies with Docker**
+3. **Start PostgreSQL only**
 ```bash
-docker compose up -d
+docker compose up -d db
 ```
 
 4. **Execute the database migrations**
@@ -46,12 +51,35 @@ docker compose up -d
 pnpm run migration:run
 ```
 
-5. **Start the development server**
+5. **Start API locally**
 ```bash
 pnpm run start:dev
 ```
 
+## Run with Docker
+
+1. **Define the environment variables if you haven't already**
+```bash
+cp .env.example .env
+```
+
+2. **Start full environment**
+```bash
+docker compose up --build -d
+```
+
+3. **Run migrations inside container**
+```bash
+docker compose exec api pnpm run migration:run
+```
+
+---
+
 The API will be available at `http://localhost:3000`
+
+> Do not run `pnpm start:dev` and `docker compose up` simultaneously.
+>
+> Both use port 3000.
 
 ## Environment Variables
 
@@ -67,7 +95,7 @@ DB_USERNAME=postgres
 DB_PASSWORD=postgres
 DB_NAME=url_shortener
 
-JWT_SECRET=change_me
+JWT_SECRET=jwt_secret
 JWT_EXPIRES_IN=1d
 
 OBSERVABILITY_ENABLED=true
@@ -95,7 +123,7 @@ pnpm run migration:revert    # Revert last migration
 pnpm run test   # Run tests
 ```
 
-## API status
+## API Status
 
 The project is under active development.
 

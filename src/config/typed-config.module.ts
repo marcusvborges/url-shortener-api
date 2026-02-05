@@ -23,4 +23,4 @@ import { TypedConfigService } from './typed-config.service';
   providers: [TypedConfigService],
   exports: [NestConfigModule, TypedConfigService],
 })
-export class TypedConfigModule { }
+export class TypedConfigModule {}

@@ -22,9 +22,10 @@ import { TypedConfigService } from '../../config/typed-config.service';
           autoLoadEntities: true,
           synchronize: false,
           logging: nodeEnv !== 'production',
-          ssl: nodeEnv === 'production'
-            ? { rejectUnauthorized: false }
-            : undefined,
+          ssl:
+            nodeEnv === 'production'
+              ? { rejectUnauthorized: false }
+              : undefined,
         };
       },
     }),

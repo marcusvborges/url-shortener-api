@@ -6,12 +6,14 @@ import { envSchema } from '../../config/env.schema';
 
 const parsed = envSchema.safeParse(process.env);
 if (!parsed.success) {
-  throw new Error(`Invalid env for datasource:\n${JSON.stringify(parsed.error, null, 2)}`);
+  throw new Error(
+    `Invalid env for datasource:\n${JSON.stringify(parsed.error, null, 2)}`,
+  );
 }
 
 const env = parsed.data;
 
-export const AppDataSource = new DataSource({
+const AppDataSource = new DataSource({
   type: 'postgres',
   host: env.DB_HOST,
   port: env.DB_PORT,
@@ -22,7 +24,8 @@ export const AppDataSource = new DataSource({
   migrations: [join(__dirname, 'migrations', '*.{ts,js}')],
   synchronize: false,
   logging: env.NODE_ENV !== 'production',
-  ssl: env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : undefined,
+  ssl:
+    env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : undefined,
 });
 
 export default AppDataSource;

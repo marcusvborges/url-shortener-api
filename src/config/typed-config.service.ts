@@ -4,9 +4,7 @@ import { EnvSchema } from './env.schema';
 
 @Injectable()
 export class TypedConfigService {
-  constructor(
-    private readonly configService: ConfigService<EnvSchema>,
-  ) { }
+  constructor(private readonly configService: ConfigService<EnvSchema>) {}
 
   get<K extends keyof EnvSchema>(key: K): EnvSchema[K] {
     const value = this.configService.get(key, { infer: true });
