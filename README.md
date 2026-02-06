@@ -3,11 +3,31 @@
 ![Node](https://img.shields.io/badge/node-20-green)
 ![NestJS](https://img.shields.io/badge/nestjs-backend-red)
 ![Postgres](https://img.shields.io/badge/postgres-db-blue)
+![GitHub release](https://img.shields.io/github/v/release/marcusvborges/url-shortener-api)
 
-REST API for URL shortening, developed as a backend technical challenge focusing on scalability, clean architecture and best practices.
+REST API for URL shortening built as a backend technical challenge, focusing on clean architecture, scalability and best practices.
 
 Built with **Node.js (NestJS)**, **TypeORM**, **PostgreSQL** and **Docker**. Dependency management powered by **pnpm**.
 
+## Features
+
+### URL Shortening
+- Public URL shortening endpoint
+- HTTP 302 redirect with click counting
+- Base62 short code generation
+
+### Authentication
+- JWT-based authentication (register/login)
+- Optional authentication for URL creation:
+  - No token: anonymous URL
+  - Valid token: URL linked to user
+  - Invalid token: (401) request rejected. Prevents accidentally shortening URLs anonymously.
+
+### Ownership & Idempotency
+- URLs can be associated with authenticated users
+- Idempotent shortening per user:
+  - Same user + same URL returns the existing short link
+- Unique constraint prevents duplication even under concurrent requests.
 
 ## Tech Stack
 
@@ -17,7 +37,7 @@ Built with **Node.js (NestJS)**, **TypeORM**, **PostgreSQL** and **Docker**. Dep
 - PostgreSQL
 - Docker & Docker Compose
 - pnpm
-- JWT Authentication
+- Passport + JWT Authentication
 - Zod (environment validation)
 
 
