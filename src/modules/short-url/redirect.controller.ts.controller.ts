@@ -8,7 +8,7 @@ export class RedirectController {
 
   @Get(':code')
   async redirect(@Param('code') code: string, @Res() res: Response) {
-    const url = await this.shortUrlService.resolveAndCount(code);
+    const url = await this.shortUrlService.countClick(code);
     return res.redirect(302, url);
   }
 }

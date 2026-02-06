@@ -8,7 +8,6 @@ import { JwtService } from '@nestjs/jwt';
 import { HashService } from '../hash/hash.service';
 import { LoginDto } from './dto/login.dto';
 import { User } from '../user/entities/user.entity';
-import { TypedConfigService } from '../../config/typed-config.service';
 import { RegisterDto } from './dto/register.dto';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 
@@ -18,7 +17,6 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly userService: UserService,
     private readonly hashService: HashService,
-    private readonly config: TypedConfigService,
   ) {}
 
   async login(loginDto: LoginDto) {
@@ -70,7 +68,7 @@ export class AuthService {
   ): Promise<User> {
     const user = await this.userService.findByEmailWithPassword(email);
     if (!user || !(await this.hashService.compare(password, user.password))) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException('Email or password are incorrect.');
     }
     return user;
   }
