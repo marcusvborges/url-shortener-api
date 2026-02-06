@@ -56,7 +56,7 @@ pnpm run migration:run
 pnpm run start:dev
 ```
 
-## Run with Docker
+## Running with Docker
 
 1. **Define the environment variables if you haven't already**
 ```bash
@@ -120,7 +120,11 @@ pnpm run migration:run       # Executes pending migrations
 pnpm run migration:revert    # Revert last migration
 
 # Tests
-pnpm run test   # Run tests
+pnpm run test       # Run tests
+
+# Code Quality
+pnpm run lint       # Runs ESLint
+pnpm run format     # Format code with Prettier
 ```
 
 ## API Status
