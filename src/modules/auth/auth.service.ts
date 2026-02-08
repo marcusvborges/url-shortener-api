@@ -1,6 +1,7 @@
 import {
   ConflictException,
   Injectable,
+  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { UserService } from '../user/user.service';
@@ -13,6 +14,8 @@ import { JwtPayload } from './interfaces/jwt-payload.interface';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private readonly jwtService: JwtService,
     private readonly userService: UserService,
@@ -29,6 +32,8 @@ export class AuthService {
 
     const { accessToken } = this.generateJwtToken(user);
 
+    this.logger.log(`User ${user.id} logged in successfully.`);
+
     return {
       accessToken,
       user: {
@@ -42,7 +47,12 @@ export class AuthService {
     const standardizedEmail = registerDto.email.trim().toLowerCase();
 
     const existingUser = await this.userService.findByEmail(standardizedEmail);
-    if (existingUser) throw new ConflictException('Email already in use');
+    if (existingUser) {
+      this.logger.warn(
+        `A user with email ${standardizedEmail} already exists.`,
+      );
+      throw new ConflictException('Email is already registered.');
+    }
 
     const hashedPassword = await this.hashService.hash(registerDto.password);
 
@@ -52,6 +62,8 @@ export class AuthService {
     );
 
     const { accessToken } = this.generateJwtToken(user);
+
+    this.logger.log(`User ${user.id} registered successfully.`);
 
     return {
       accessToken,
@@ -68,6 +80,7 @@ export class AuthService {
   ): Promise<User> {
     const user = await this.userService.findByEmailWithPassword(email);
     if (!user || !(await this.hashService.compare(password, user.password))) {
+      this.logger.warn(`Invalid credentials.`);
       throw new UnauthorizedException('Email or password are incorrect.');
     }
     return user;

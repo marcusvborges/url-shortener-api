@@ -3,6 +3,7 @@ import {
   ConflictException,
   NotFoundException,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import { CreateShortUrlDto } from './dto/create-short-url.dto';
 import { UpdateShortUrlDto } from './dto/update-short-url.dto';
@@ -14,6 +15,8 @@ import { randomInt } from 'crypto';
 
 @Injectable()
 export class ShortUrlService {
+  private readonly logger = new Logger(ShortUrlService.name);
+
   private static readonly CODE_REGEX = /^[0-9A-Za-z]{6}$/;
   private static readonly ALPHABET =
     '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
@@ -32,7 +35,12 @@ export class ShortUrlService {
         where: { ownerId, originalUrl, deletedAt: IsNull() },
       });
 
-      if (existingUrl) return this.mapToResponse(existingUrl);
+      if (existingUrl) {
+        this.logger.log(
+          `Found existing url, returning existing code: ${existingUrl.code} ownerId: ${ownerId}`,
+        );
+        return this.mapToResponse(existingUrl);
+      }
     }
 
     for (let attempt = 0; attempt < 5; attempt++) {
@@ -40,28 +48,43 @@ export class ShortUrlService {
 
       const shortUrl = this.shortUrlRepository.create({
         code,
-        originalUrl: createShortUrlDto.originalUrl,
+        originalUrl,
         clicks: 0,
         ownerId,
       });
       try {
         const savedShortUrl = await this.shortUrlRepository.save(shortUrl);
 
+        this.logger.log(
+          `Short URL created successfully with code: ${savedShortUrl.code} ownerId: ${ownerId}`,
+        );
+
         return this.mapToResponse(savedShortUrl);
       } catch (err) {
         if (!this.isUniqueViolation(err)) throw err;
+
+        this.logger.debug(`Short code collision detected: ${code}`);
 
         if (ownerId) {
           const existingUrl = await this.shortUrlRepository.findOne({
             where: { ownerId, originalUrl, deletedAt: IsNull() },
           });
 
-          if (existingUrl) return this.mapToResponse(existingUrl);
+          if (existingUrl) {
+            this.logger.log(
+              `Found existing url (request conflict), returning existing code: ${existingUrl.code} ownerId: ${ownerId}`,
+            );
+            return this.mapToResponse(existingUrl);
+          }
         }
       }
 
       continue;
     }
+
+    this.logger.warn(
+      `Failed to generate unique short code after 5 attempts. ownerId: ${ownerId}`,
+    );
 
     throw new ConflictException(
       'Could not generate a unique short URL code. Please try again',
@@ -73,6 +96,8 @@ export class ShortUrlService {
       where: { ownerId, deletedAt: IsNull() },
       order: { createdAt: 'DESC' },
     });
+
+    this.logger.log(`Found ${urls.length} URLs for ownerId: ${ownerId}`);
 
     return urls.map((url) => this.mapToResponse(url));
   }
@@ -87,6 +112,9 @@ export class ShortUrlService {
     });
 
     if (!shortUrl) {
+      this.logger.warn(
+        `Short URL not found for update. id: ${id} ownerId: ${ownerId}`,
+      );
       throw new NotFoundException('Short URL not found');
     }
 
@@ -95,6 +123,9 @@ export class ShortUrlService {
     }
 
     const savedUpdate = await this.shortUrlRepository.save(shortUrl);
+
+    this.logger.log(`Short URL updated: id=${id} ownerId=${ownerId}`);
+
     return this.mapToResponse(savedUpdate);
   }
 
@@ -105,10 +136,15 @@ export class ShortUrlService {
     });
 
     if (!shortUrl) {
+      this.logger.warn(
+        `Short URL not found for delete. id: ${id} ownerId: ${ownerId}`,
+      );
       throw new NotFoundException('Short URL not found');
     }
 
     await this.shortUrlRepository.softDelete(shortUrl.id);
+
+    this.logger.log(`Short URL soft deleted: id=${id} ownerId: ${ownerId}`);
   }
 
   async countClick(code: string): Promise<string> {
@@ -153,6 +189,7 @@ export class ShortUrlService {
 
   private mapToResponse(shortUrl: ShortUrl) {
     return {
+      id: shortUrl.id,
       code: shortUrl.code,
       shortUrl: this.buildShortUrl(shortUrl.code),
       originalUrl: shortUrl.originalUrl,

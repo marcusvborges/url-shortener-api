@@ -16,12 +16,24 @@ import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth-guard';
 import type { AuthUser } from '../auth/interfaces/auth-user.interface';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth-guard';
+import { ApiTags } from '@nestjs/swagger';
+import {
+  ApiAuthOptional,
+  ApiAuthRequired,
+  ApiShortenResponses,
+  ApiListMyUrlsResponses,
+  ApiUpdateUrlResponses,
+  ApiDeleteUrlResponses,
+} from '../../common/swagger/swagger.decorator';
 
+@ApiTags('Short URLs')
 @Controller('api/short-url')
 export class ShortUrlController {
   constructor(private readonly shortUrlService: ShortUrlService) {}
 
   @UseGuards(OptionalJwtAuthGuard)
+  @ApiAuthOptional()
+  @ApiShortenResponses()
   @Post()
   create(
     @Body() createShortUrlDto: CreateShortUrlDto,
@@ -31,12 +43,16 @@ export class ShortUrlController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @ApiAuthRequired()
+  @ApiListMyUrlsResponses()
   @Get('me')
   findByOwner(@CurrentUser() user: AuthUser) {
     return this.shortUrlService.findByOwner(user.id);
   }
 
   @UseGuards(JwtAuthGuard)
+  @ApiAuthRequired()
+  @ApiUpdateUrlResponses()
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -47,6 +63,8 @@ export class ShortUrlController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @ApiAuthRequired()
+  @ApiDeleteUrlResponses()
   @Delete(':id')
   @HttpCode(204)
   remove(@Param('id') id: string, @CurrentUser() user: AuthUser) {
