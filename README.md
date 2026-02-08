@@ -32,6 +32,10 @@ Built with **Node.js (NestJS)**, **TypeORM**, **PostgreSQL** and **Docker**. Dep
   - Valid token: URL associated with the authenticated user
   - Invalid token: request rejected with 401 Unauthorized
 
+## Architecture Overview
+
+The project follows a modular architecture using NestJS modules, separating concerns such as authentication, URL management, configuration, database access and shared infrastructure.
+
 ## Tech Stack
 
 - Node.js 20 (LTS)
@@ -41,6 +45,8 @@ Built with **Node.js (NestJS)**, **TypeORM**, **PostgreSQL** and **Docker**. Dep
 - Docker & Docker Compose
 - pnpm
 - Passport + JWT Authentication
+- Swagger / OpenAPI documentation
+- NestJS Logger (observability)
 - Zod (environment validation)
 
 
@@ -103,6 +109,12 @@ The API will be available at `http://localhost:3000`
 > Do not run `pnpm start:dev` and `docker compose up` simultaneously.
 >
 > Both use port 3000.
+
+## API Documentation
+
+Interactive API documentation is available via Swagger:
+
+http://localhost:3000/api/docs
 
 ## Environment Variables
 
@@ -169,9 +181,10 @@ pnpm run format     # Format code with Prettier
 | DELETE| /api/short-url/:id  | Yes | Soft delete URL (owner only) |
 
 
-## API Status
+## Project Status
 
-The project is under active development.
+This project was developed as a technical challenge
+and continues evolving with incremental releases.
 
 ## Planned Releases
 
@@ -179,8 +192,8 @@ The project is under active development.
 - `v0.2.0` – Users and authentication (JWT)
 - `v0.3.0` – URL ownership (authenticated & anonymous)
 - `v0.4.0` – User URL management (list, update, soft delete + ownership enforcement)
-- `v0.5.0` – Swagger, validations and error handling
-- `v0.6.0` – Unit tests and observability (logs)
+- `v0.5.0` – Swagger, observability (logs) and error handling
+- `v0.6.0` – Unit tests, CI/CD and Deploy cloud
 
 ## Notes
 This project prioritizes:
