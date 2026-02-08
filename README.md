@@ -5,29 +5,32 @@
 ![Postgres](https://img.shields.io/badge/postgres-db-blue)
 ![GitHub release](https://img.shields.io/github/v/release/marcusvborges/url-shortener-api)
 
-REST API for URL shortening built as a backend technical challenge, focusing on clean architecture, scalability and best practices.
+A REST API built as a backend technical challenge focused on URL shortening.
+Beyond the core functionality, it explores clean architecture principles, scalability considerations, and backend best practices.
 
 Built with **Node.js (NestJS)**, **TypeORM**, **PostgreSQL** and **Docker**. Dependency management powered by **pnpm**.
 
 ## Features
 
 ### URL Shortening
-- Public URL shortening endpoint
+- Public endpoint for URL shortening
+- Base62 short code generation for each URL, creating a shortened link based on the base URL and generated code
 - HTTP 302 redirect with click counting
-- Base62 short code generation
-
-### Authentication
-- JWT-based authentication (register/login)
-- Optional authentication for URL creation:
-  - No token: anonymous URL
-  - Valid token: URL linked to user
-  - Invalid token: (401) request rejected. Prevents accidentally shortening URLs anonymously.
+- Automatic retry mechanism (up to 5 attempts) to handle potential short code collisions during concurrent requests
 
 ### Ownership & Idempotency
 - URLs can be associated with authenticated users
-- Idempotent shortening per user:
-  - Same user + same URL returns the existing short link
-- Unique constraint prevents duplication even under concurrent requests.
+- Ownership enforcement ensuring users can only access and modify their own URLs
+- Idempotent URL shortening per user:
+  - If the same user shortens a URL that is already associated with their account, the existing short link is returned instead of creating a new one, preventing unnecessary database growth
+- Unique constraint prevents duplication even under concurrent requests
+
+### Authentication
+- JWT (Bearer token) authentication
+- Optional authentication for URL creation:
+  - No token: anonymous URL
+  - Valid token: URL associated with the authenticated user
+  - Invalid token: request rejected with 401 Unauthorized
 
 ## Tech Stack
 
@@ -147,6 +150,25 @@ pnpm run lint       # Runs ESLint
 pnpm run format     # Format code with Prettier
 ```
 
+## Endpoints
+
+### Authentication
+| Method | Route         | Auth | Description |
+|------:|---------------|:----:|-------------|
+| POST  | /auth/register | No  | Register user |
+| POST  | /auth/login    | No  | Login and get access token |
+| GET   | /auth/me       | Yes | Get current authenticated user |
+
+### Short URLs
+| Method | Route               | Auth | Description |
+|------:|---------------------|:----:|-------------|
+| POST  | /api/short-url      | Optional | Shorten a URL (anonymous or owned if authenticated) |
+| GET   | /:code              | No  | Redirect (302) and increment click counter |
+| GET   | /api/short-url/me   | Yes | List current user's shortened URLs (includes clicks) |
+| PATCH | /api/short-url/:id  | Yes | Update original URL (owner only) |
+| DELETE| /api/short-url/:id  | Yes | Soft delete URL (owner only) |
+
+
 ## API Status
 
 The project is under active development.
@@ -155,8 +177,8 @@ The project is under active development.
 
 - `v0.1.0` – Public URL shortening + redirect with click counting
 - `v0.2.0` – Users and authentication (JWT)
-- `v0.3.0` – URL ownership (authenticated vs anonymous)
-- `v0.4.0` – User operations (list, update, delete URLs)
+- `v0.3.0` – URL ownership (authenticated & anonymous)
+- `v0.4.0` – User URL management (list, update, soft delete + ownership enforcement)
 - `v0.5.0` – Swagger, validations and error handling
 - `v0.6.0` – Unit tests and observability (logs)
 
