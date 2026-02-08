@@ -5,6 +5,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { CreateShortUrlDto } from './dto/create-short-url.dto';
+import { UpdateShortUrlDto } from './dto/update-short-url.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Repository } from 'typeorm';
 import { ShortUrl } from './entities/short-url.entity';
@@ -27,11 +28,11 @@ export class ShortUrlService {
     const originalUrl = createShortUrlDto.originalUrl;
 
     if (ownerId) {
-      const existingtUrl = await this.shortUrlRepository.findOne({
+      const existingUrl = await this.shortUrlRepository.findOne({
         where: { ownerId, originalUrl, deletedAt: IsNull() },
       });
 
-      if (existingtUrl) return this.mapToResponse(existingtUrl);
+      if (existingUrl) return this.mapToResponse(existingUrl);
     }
 
     for (let attempt = 0; attempt < 5; attempt++) {
@@ -51,20 +52,63 @@ export class ShortUrlService {
         if (!this.isUniqueViolation(err)) throw err;
 
         if (ownerId) {
-          const existingtUrl = await this.shortUrlRepository.findOne({
+          const existingUrl = await this.shortUrlRepository.findOne({
             where: { ownerId, originalUrl, deletedAt: IsNull() },
           });
 
-          if (existingtUrl) return this.mapToResponse(existingtUrl);
-
-          continue;
+          if (existingUrl) return this.mapToResponse(existingUrl);
         }
       }
 
-      throw new ConflictException(
-        'Could not generate a unique short URL code. Please try again.',
-      );
+      continue;
     }
+
+    throw new ConflictException(
+      'Could not generate a unique short URL code. Please try again',
+    );
+  }
+
+  async findByOwner(ownerId: string) {
+    const urls = await this.shortUrlRepository.find({
+      where: { ownerId, deletedAt: IsNull() },
+      order: { createdAt: 'DESC' },
+    });
+
+    return urls.map((url) => this.mapToResponse(url));
+  }
+
+  async update(
+    id: string,
+    updateShortUrlDto: UpdateShortUrlDto,
+    ownerId: string,
+  ) {
+    const shortUrl = await this.shortUrlRepository.findOne({
+      where: { id, ownerId, deletedAt: IsNull() },
+    });
+
+    if (!shortUrl) {
+      throw new NotFoundException('Short URL not found');
+    }
+
+    if (updateShortUrlDto.originalUrl != undefined) {
+      shortUrl.originalUrl = updateShortUrlDto.originalUrl;
+    }
+
+    const savedUpdate = await this.shortUrlRepository.save(shortUrl);
+    return this.mapToResponse(savedUpdate);
+  }
+
+  async remove(id: string, ownerId: string) {
+    const shortUrl = await this.shortUrlRepository.findOne({
+      where: { id, ownerId, deletedAt: IsNull() },
+      select: ['id'],
+    });
+
+    if (!shortUrl) {
+      throw new NotFoundException('Short URL not found');
+    }
+
+    await this.shortUrlRepository.softDelete(shortUrl.id);
   }
 
   async countClick(code: string): Promise<string> {
@@ -112,6 +156,8 @@ export class ShortUrlService {
       code: shortUrl.code,
       shortUrl: this.buildShortUrl(shortUrl.code),
       originalUrl: shortUrl.originalUrl,
+      createdAt: shortUrl.createdAt,
+      updatedAt: shortUrl.updatedAt,
       clicks: shortUrl.clicks,
     };
   }
