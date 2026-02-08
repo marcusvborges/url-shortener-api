@@ -12,7 +12,7 @@ export class UserService {
 
   async create(email: string, hashedPassword: string) {
     const user = this.userRepository.create({
-      email: email.trim().toLowerCase(),
+      email: this.standardizeEmail(email),
       password: hashedPassword,
     });
     return await this.userRepository.save(user);
@@ -20,7 +20,7 @@ export class UserService {
 
   async findByEmail(email: string): Promise<User | null> {
     return this.userRepository.findOne({
-      where: { email: email.trim().toLowerCase(), deletedAt: IsNull() },
+      where: { email: this.standardizeEmail(email), deletedAt: IsNull() },
     });
   }
 
@@ -29,9 +29,13 @@ export class UserService {
       .createQueryBuilder('user')
       .addSelect('user.password')
       .where('user.email = :email', {
-        email: email.trim().toLowerCase(),
+        email: this.standardizeEmail(email),
       })
       .andWhere('user.deletedAt IS NULL')
       .getOne();
+  }
+
+  private standardizeEmail(email: string) {
+    return email.trim().toLowerCase();
   }
 }
