@@ -35,7 +35,7 @@ export class ShortUrlService {
       });
 
       if (existingUrl) {
-        this.observability.log(
+        this.observability.debug(
           `Found existing url, returning existing code: ${existingUrl.code} ownerId: ${ownerId}`,
         );
         return this.mapToResponse(existingUrl);
@@ -96,7 +96,7 @@ export class ShortUrlService {
       order: { createdAt: 'DESC' },
     });
 
-    this.observability.log(`Found ${urls.length} URLs for ownerId: ${ownerId}`);
+    this.observability.log(`Found ${urls.length} URLs`);
 
     return urls.map((url) => this.mapToResponse(url));
   }
@@ -150,6 +150,7 @@ export class ShortUrlService {
 
   async countClick(code: string): Promise<string> {
     if (!ShortUrlService.CODE_REGEX.test(code)) {
+      this.observability.warn(`Invalid short code format: ${code}`);
       throw new BadRequestException('Short URL invalid');
     }
 
@@ -159,6 +160,9 @@ export class ShortUrlService {
     });
 
     if (!shortUrl) {
+      this.observability.warn(
+        `Short URL not found on redirect for code: ${code}`,
+      );
       throw new NotFoundException('Short URL not found');
     }
 

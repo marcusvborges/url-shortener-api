@@ -47,9 +47,7 @@ export class AuthService {
 
     const existingUser = await this.userService.findByEmail(standardizedEmail);
     if (existingUser) {
-      this.observability.warn(
-        `A user with email ${standardizedEmail} already exists.`,
-      );
+      this.observability.warn(`Email is already registered.`);
       throw new ConflictException('Email is already registered.');
     }
 
