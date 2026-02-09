@@ -6,7 +6,8 @@
 ![GitHub release](https://img.shields.io/github/v/release/marcusvborges/url-shortener-api)
 
 A REST API built as a backend technical challenge focused on URL shortening.
-Beyond the core functionality, it explores clean architecture principles, scalability considerations, and backend best practices.
+
+Beyond the core functionality, the project explores clean architecture principles, scalability considerations, testing practices and backend development best practices.
 
 Built with **Node.js (NestJS)**, **TypeORM**, **PostgreSQL** and **Docker**. Dependency management powered by **pnpm**.
 
@@ -30,7 +31,7 @@ Built with **Node.js (NestJS)**, **TypeORM**, **PostgreSQL** and **Docker**. Dep
 - Optional authentication for URL creation:
   - No token: anonymous URL
   - Valid token: URL associated with the authenticated user
-  - Invalid token: request rejected with 401 Unauthorized
+  - Invalid token: request is rejected with HTTP 401 Unauthorized
 
 ## Architecture Overview
 
@@ -45,7 +46,9 @@ The project follows a modular architecture using NestJS modules, separating conc
 - Docker & Docker Compose
 - pnpm
 - Passport + JWT Authentication
-- Swagger / OpenAPI documentation
+- Swagger (OpenAPI)
+- Jest (unit testing)
+- GitHub Actions (CI pipeline)
 - NestJS Logger (observability)
 - Zod (environment validation)
 
@@ -106,10 +109,6 @@ docker compose exec api pnpm run migration:run
 
 The API will be available at `http://localhost:3000`
 
-> Do not run `pnpm start:dev` and `docker compose up` simultaneously.
->
-> Both use port 3000.
-
 ## API Documentation
 
 Interactive API documentation is available via Swagger:
@@ -154,8 +153,8 @@ pnpm run migration:generate  # Generates new migration
 pnpm run migration:run       # Executes pending migrations
 pnpm run migration:revert    # Revert last migration
 
-# Tests
-pnpm run test       # Run tests
+# Unit Tests
+pnpm run test       # Run all tests
 
 # Code Quality
 pnpm run lint       # Runs ESLint
@@ -183,17 +182,16 @@ pnpm run format     # Format code with Prettier
 
 ## Project Status
 
-This project was developed as a technical challenge
-and continues evolving with incremental releases.
+This project was developed as a technical challenge and is complete for the proposed scope.
 
-## Planned Releases
+## Release History
 
-- `v0.1.0` – Public URL shortening + redirect with click counting
-- `v0.2.0` – Users and authentication (JWT)
-- `v0.3.0` – URL ownership (authenticated & anonymous)
-- `v0.4.0` – User URL management (list, update, soft delete + ownership enforcement)
-- `v0.5.0` – Swagger, observability (logs) and error handling
-- `v0.6.0` – Unit tests, CI/CD and Deploy cloud
+- `v0.1.0` – Public URL shortening + redirect with click counting  
+- `v0.2.0` – Users and authentication (JWT)  
+- `v0.3.0` – URL ownership (authenticated & anonymous)  
+- `v0.4.0` – User URL management (list, update, soft delete + ownership enforcement)  
+- `v0.5.0` – Swagger documentation, observability logs and error handling  
+- `v0.6.0` – Unit tests, CI pipeline and cloud deployment preparation
 
 ## Notes
 This project prioritizes:
@@ -202,6 +200,36 @@ This project prioritizes:
 - explicit configuration
 - strong typing
 - predictable local execution
+
+### Observability
+
+The project includes a lightweight abstraction layer for observability:
+
+- Centralized logging using NestJS Logger (`ObservabilityService`)
+- Enable and disable via environment variable
+- Log level control
+- Designed to allow future integration with external tools (Datadog, OpenTelemetry, etc.)
+
+### CI/CD
+
+A basic CI pipeline is configured using GitHub Actions.
+
+On each push:
+
+- Lint is executed
+- Unit tests are run
+- Application build is validated
+
+This helps ensure code quality and delivery reliability.
+
+## Horizontal Scaling Considerations
+
+- **Database concurrency and uniqueness** – short code generation may face contention under high load.
+- **Distributed caching** – using Redis or similar to reduce database reads, especially for redirects.
+- **Asynchronous processing** – click counting and heavy operations could be handled via queues and workers.
+- **Centralized observability** – logs, metrics and tracing become essential across multiple instances.
+
+These aspects mainly introduce challenges around data consistency, operational complexity, infrastructure costs and monitoring.
 
 ## License
 
