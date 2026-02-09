@@ -11,7 +11,7 @@ import { IsNull, Repository } from 'typeorm';
 import { ShortUrl } from './entities/short-url.entity';
 import { TypedConfigService } from '../../config/typed-config.service';
 import { randomInt } from 'crypto';
-import { ObservabilityService } from 'src/common/observability/observability.service';
+import { ObservabilityService } from '../../common/observability/observability.service';
 
 @Injectable()
 export class ShortUrlService {

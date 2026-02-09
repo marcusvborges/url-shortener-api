@@ -9,6 +9,7 @@ import { IsNull, Repository, UpdateResult } from 'typeorm';
 import { ShortUrlService } from './short-url.service';
 import { ShortUrl } from './entities/short-url.entity';
 import { TypedConfigService } from '../../config/typed-config.service';
+import { ObservabilityService } from '../../common/observability/observability.service';
 
 type RepoMock = jest.Mocked<
   Pick<
@@ -57,19 +58,28 @@ describe('ShortUrlService', () => {
       get: jest.fn(),
     };
 
+    const observabilityMock = {
+      log: jest.fn(),
+      warn: jest.fn(),
+      error: jest.fn(),
+      debug: jest.fn(),
+    };
+
+
     config.get.mockReturnValue('http://localhost:3000');
 
     repo.create.mockImplementation((input: unknown) => input as ShortUrl);
 
-    const moduleRef = await Test.createTestingModule({
+    const module = await Test.createTestingModule({
       providers: [
         ShortUrlService,
         { provide: getRepositoryToken(ShortUrl), useValue: repo },
         { provide: TypedConfigService, useValue: config },
+        { provide: ObservabilityService, useValue: observabilityMock },
       ],
     }).compile();
 
-    service = moduleRef.get(ShortUrlService);
+    service = module.get(ShortUrlService);
     jest.clearAllMocks();
   });
 

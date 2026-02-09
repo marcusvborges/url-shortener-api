@@ -4,6 +4,7 @@ import { AuthService } from './auth.service';
 import { UserService } from '../user/user.service';
 import { HashService } from '../hash/hash.service';
 import { JwtService } from '@nestjs/jwt';
+import { ObservabilityService } from '../../common/observability/observability.service';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -23,6 +24,13 @@ describe('AuthService', () => {
     sign: jest.fn(),
   };
 
+  const observabilityMock = {
+    log: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+    debug: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module = await Test.createTestingModule({
       providers: [
@@ -30,6 +38,7 @@ describe('AuthService', () => {
         { provide: UserService, useValue: userServiceMock },
         { provide: HashService, useValue: hashServiceMock },
         { provide: JwtService, useValue: jwtServiceMock },
+        { provide: ObservabilityService, useValue: observabilityMock },
       ],
     }).compile();
 

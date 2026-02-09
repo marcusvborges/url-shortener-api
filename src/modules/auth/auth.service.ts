@@ -10,7 +10,7 @@ import { LoginDto } from './dto/login.dto';
 import { User } from '../user/entities/user.entity';
 import { RegisterDto } from './dto/register.dto';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
-import { ObservabilityService } from 'src/common/observability/observability.service';
+import { ObservabilityService } from '../../common/observability/observability.service';
 
 @Injectable()
 export class AuthService {
