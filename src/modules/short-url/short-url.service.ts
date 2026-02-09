@@ -3,7 +3,6 @@ import {
   ConflictException,
   NotFoundException,
   BadRequestException,
-  Logger,
 } from '@nestjs/common';
 import { CreateShortUrlDto } from './dto/create-short-url.dto';
 import { UpdateShortUrlDto } from './dto/update-short-url.dto';
@@ -12,11 +11,10 @@ import { IsNull, Repository } from 'typeorm';
 import { ShortUrl } from './entities/short-url.entity';
 import { TypedConfigService } from '../../config/typed-config.service';
 import { randomInt } from 'crypto';
+import { ObservabilityService } from 'src/common/observability/observability.service';
 
 @Injectable()
 export class ShortUrlService {
-  private readonly logger = new Logger(ShortUrlService.name);
-
   private static readonly CODE_REGEX = /^[0-9A-Za-z]{6}$/;
   private static readonly ALPHABET =
     '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
@@ -25,6 +23,7 @@ export class ShortUrlService {
     @InjectRepository(ShortUrl)
     private readonly shortUrlRepository: Repository<ShortUrl>,
     private readonly config: TypedConfigService,
+    private readonly observability: ObservabilityService,
   ) {}
 
   async create(createShortUrlDto: CreateShortUrlDto, ownerId?: string) {
@@ -36,7 +35,7 @@ export class ShortUrlService {
       });
 
       if (existingUrl) {
-        this.logger.log(
+        this.observability.log(
           `Found existing url, returning existing code: ${existingUrl.code} ownerId: ${ownerId}`,
         );
         return this.mapToResponse(existingUrl);
@@ -55,7 +54,7 @@ export class ShortUrlService {
       try {
         const savedShortUrl = await this.shortUrlRepository.save(shortUrl);
 
-        this.logger.log(
+        this.observability.log(
           `Short URL created successfully with code: ${savedShortUrl.code} ownerId: ${ownerId}`,
         );
 
@@ -63,7 +62,7 @@ export class ShortUrlService {
       } catch (err) {
         if (!this.isUniqueViolation(err)) throw err;
 
-        this.logger.debug(`Short code collision detected: ${code}`);
+        this.observability.debug(`Short code collision detected: ${code}`);
 
         if (ownerId) {
           const existingUrl = await this.shortUrlRepository.findOne({
@@ -71,7 +70,7 @@ export class ShortUrlService {
           });
 
           if (existingUrl) {
-            this.logger.log(
+            this.observability.log(
               `Found existing url (request conflict), returning existing code: ${existingUrl.code} ownerId: ${ownerId}`,
             );
             return this.mapToResponse(existingUrl);
@@ -82,7 +81,7 @@ export class ShortUrlService {
       continue;
     }
 
-    this.logger.warn(
+    this.observability.warn(
       `Failed to generate unique short code after 5 attempts. ownerId: ${ownerId}`,
     );
 
@@ -97,7 +96,7 @@ export class ShortUrlService {
       order: { createdAt: 'DESC' },
     });
 
-    this.logger.log(`Found ${urls.length} URLs for ownerId: ${ownerId}`);
+    this.observability.log(`Found ${urls.length} URLs for ownerId: ${ownerId}`);
 
     return urls.map((url) => this.mapToResponse(url));
   }
@@ -112,7 +111,7 @@ export class ShortUrlService {
     });
 
     if (!shortUrl) {
-      this.logger.warn(
+      this.observability.warn(
         `Short URL not found for update. id: ${id} ownerId: ${ownerId}`,
       );
       throw new NotFoundException('Short URL not found');
@@ -124,7 +123,7 @@ export class ShortUrlService {
 
     const savedUpdate = await this.shortUrlRepository.save(shortUrl);
 
-    this.logger.log(`Short URL updated: id=${id} ownerId=${ownerId}`);
+    this.observability.log(`Short URL updated: id=${id} ownerId=${ownerId}`);
 
     return this.mapToResponse(savedUpdate);
   }
@@ -136,7 +135,7 @@ export class ShortUrlService {
     });
 
     if (!shortUrl) {
-      this.logger.warn(
+      this.observability.warn(
         `Short URL not found for delete. id: ${id} ownerId: ${ownerId}`,
       );
       throw new NotFoundException('Short URL not found');
@@ -144,7 +143,9 @@ export class ShortUrlService {
 
     await this.shortUrlRepository.softDelete(shortUrl.id);
 
-    this.logger.log(`Short URL soft deleted: id=${id} ownerId: ${ownerId}`);
+    this.observability.log(
+      `Short URL soft deleted: id=${id} ownerId: ${ownerId}`,
+    );
   }
 
   async countClick(code: string): Promise<string> {

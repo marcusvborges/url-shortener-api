@@ -1,7 +1,6 @@
 import {
   ConflictException,
   Injectable,
-  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { UserService } from '../user/user.service';
@@ -11,15 +10,15 @@ import { LoginDto } from './dto/login.dto';
 import { User } from '../user/entities/user.entity';
 import { RegisterDto } from './dto/register.dto';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
+import { ObservabilityService } from 'src/common/observability/observability.service';
 
 @Injectable()
 export class AuthService {
-  private readonly logger = new Logger(AuthService.name);
-
   constructor(
     private readonly jwtService: JwtService,
     private readonly userService: UserService,
     private readonly hashService: HashService,
+    private readonly observability: ObservabilityService,
   ) {}
 
   async login(loginDto: LoginDto) {
@@ -32,7 +31,7 @@ export class AuthService {
 
     const { accessToken } = this.generateJwtToken(user);
 
-    this.logger.log(`User ${user.id} logged in successfully.`);
+    this.observability.log(`User ${user.id} logged in successfully.`);
 
     return {
       accessToken,
@@ -48,7 +47,7 @@ export class AuthService {
 
     const existingUser = await this.userService.findByEmail(standardizedEmail);
     if (existingUser) {
-      this.logger.warn(
+      this.observability.warn(
         `A user with email ${standardizedEmail} already exists.`,
       );
       throw new ConflictException('Email is already registered.');
@@ -63,7 +62,7 @@ export class AuthService {
 
     const { accessToken } = this.generateJwtToken(user);
 
-    this.logger.log(`User ${user.id} registered successfully.`);
+    this.observability.log(`User ${user.id} registered successfully.`);
 
     return {
       accessToken,
@@ -80,7 +79,7 @@ export class AuthService {
   ): Promise<User> {
     const user = await this.userService.findByEmailWithPassword(email);
     if (!user || !(await this.hashService.compare(password, user.password))) {
-      this.logger.warn(`Invalid credentials.`);
+      this.observability.warn(`Invalid credentials.`);
       throw new UnauthorizedException('Email or password are incorrect.');
     }
     return user;

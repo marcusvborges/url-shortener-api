@@ -19,6 +19,9 @@ export const envSchema = z.object({
 
   OBSERVABILITY_ENABLED: z.coerce.boolean().default(false),
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
+
+  SWAGGER_ENABLED: z.coerce.boolean().default(true),
+  SWAGGER_PATH: z.string().default('api/docs'),
 });
 
 export type EnvSchema = z.infer<typeof envSchema>;

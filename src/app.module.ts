@@ -5,6 +5,7 @@ import { DatabaseModule } from './modules/database/database.module';
 import { UserModule } from './modules/user/user.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { HashModule } from './modules/hash/hash.module';
+import { ObservabilityService } from './common/observability/observability.service';
 
 @Module({
   imports: [
@@ -15,5 +16,6 @@ import { HashModule } from './modules/hash/hash.module';
     AuthModule,
     HashModule,
   ],
+  providers: [ObservabilityService],
 })
 export class AppModule {}
