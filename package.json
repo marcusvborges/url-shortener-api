@@ -1,6 +1,6 @@
 {
   "name": "url-shortener",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "URL shortener API built with NestJS, TypeORM and PostgreSQL",
   "author": "Marcus Vinícius <marcusvbs2018@gmail.com>",
   "private": false,
