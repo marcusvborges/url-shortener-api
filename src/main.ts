@@ -25,7 +25,6 @@ async function bootstrap() {
   const config = app.get(TypedConfigService);
 
   const port = config.get('PORT');
-  const baseUrl = config.get('BASE_URL').replace(/\/+$/, '');
   const swaggerEnabled = config.get('SWAGGER_ENABLED');
   const swaggerPath = config.get('SWAGGER_PATH').replace(/^\/+/, '');
 
@@ -35,7 +34,7 @@ async function bootstrap() {
       .setDescription('REST API for URL shortening with JWT authentication.')
       .setVersion('1.0.0')
       .addBearerAuth(
-        { type: 'http', scheme: 'bearer', bearerFormat: 'JWT', in: 'header' },
+        { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
         'JWT-auth',
       )
       .build();
@@ -43,14 +42,11 @@ async function bootstrap() {
     const document = SwaggerModule.createDocument(app, swaggerConfig);
     SwaggerModule.setup(swaggerPath, app, document);
 
-    logger.log(`Swagger available at ${baseUrl}/${swaggerPath}`);
+    logger.log(`Swagger enabled at /${swaggerPath}`);
   }
 
-  await app.listen(port);
-  logger.log(`API running on ${baseUrl}`);
+  await app.listen(port, '0.0.0.0');
+  logger.log(`API running on port ${port}`);
 }
 
-bootstrap().catch((err) => {
-  console.error('Error starting application:', err);
-  process.exit(1);
-});
+void bootstrap();

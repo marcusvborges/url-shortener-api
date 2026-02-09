@@ -65,7 +65,6 @@ describe('ShortUrlService', () => {
       debug: jest.fn(),
     };
 
-
     config.get.mockReturnValue('http://localhost:3000');
 
     repo.create.mockImplementation((input: unknown) => input as ShortUrl);

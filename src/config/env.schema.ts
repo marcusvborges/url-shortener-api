@@ -14,6 +14,8 @@ export const envSchema = z.object({
   DB_PASSWORD: z.string(),
   DB_NAME: z.string(),
 
+  DATABASE_URL: z.string().optional(),
+
   JWT_SECRET: z.string().min(1),
   JWT_EXPIRES_IN: z.string().default('1d'),
 
