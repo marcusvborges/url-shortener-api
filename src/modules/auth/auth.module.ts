@@ -9,10 +9,12 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './jwt.strategy';
 import type { SignOptions } from 'jsonwebtoken';
+import { ObservabilityModule } from '../../common/observability/observability.module';
 
 @Module({
   imports: [
     PassportModule,
+    ObservabilityModule,
     JwtModule.registerAsync({
       imports: [TypedConfigModule],
       inject: [TypedConfigService],

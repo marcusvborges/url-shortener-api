@@ -11,7 +11,7 @@ import { TypedConfigService } from '../../config/typed-config.service';
       inject: [TypedConfigService],
       useFactory: (config: TypedConfigService) => {
         const nodeEnv = config.get('NODE_ENV');
-        const databaseUrl = config.get('DATABASE_URL');
+        const databaseUrl = config.getOptional('DATABASE_URL');
 
         return {
           type: 'postgres' as const,

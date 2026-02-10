@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { Logger, ValidationPipe } from '@nestjs/common';
+import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { NestExpressApplication } from '@nestjs/platform-express';
@@ -8,7 +8,6 @@ import { TypedConfigService } from './config/typed-config.service';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
-  const logger = new Logger('Bootstrap');
 
   app.disable('x-powered-by');
 
@@ -41,12 +40,9 @@ async function bootstrap() {
 
     const document = SwaggerModule.createDocument(app, swaggerConfig);
     SwaggerModule.setup(swaggerPath, app, document);
-
-    logger.log(`Swagger enabled at /${swaggerPath}`);
   }
 
   await app.listen(port, '0.0.0.0');
-  logger.log(`API running on port ${port}`);
 }
 
 void bootstrap();

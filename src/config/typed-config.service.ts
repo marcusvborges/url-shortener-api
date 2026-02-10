@@ -13,4 +13,8 @@ export class TypedConfigService {
     }
     return value as EnvSchema[K];
   }
+
+  getOptional<K extends keyof EnvSchema>(key: K): EnvSchema[K] | undefined {
+    return this.configService.get(key, { infer: true });
+  }
 }
