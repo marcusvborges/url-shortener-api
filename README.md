@@ -105,15 +105,15 @@ docker compose up --build -d
 docker compose exec api pnpm run migration:run
 ```
 
----
+## Deployment & API Docs
 
-The API will be available at `http://localhost:3000`
+- **Production API:** https://url-shortener-api-production.up.railway.app  
+- **Swagger (Production):** https://url-shortener-api-production.up.railway.app/api/docs  
 
-## API Documentation
+Local development:
 
-Interactive API documentation is available via Swagger:
-
-http://localhost:3000/api/docs
+- API: http://localhost:3000  
+- Swagger: http://localhost:3000/api/docs
 
 ## Environment Variables
 
