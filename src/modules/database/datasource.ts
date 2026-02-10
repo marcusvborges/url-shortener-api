@@ -15,11 +15,17 @@ const env = parsed.data;
 
 const AppDataSource = new DataSource({
   type: 'postgres',
-  host: env.DB_HOST,
-  port: env.DB_PORT,
-  username: env.DB_USERNAME,
-  password: env.DB_PASSWORD,
-  database: env.DB_NAME,
+
+  ...(env.DATABASE_URL
+    ? { url: env.DATABASE_URL }
+    : {
+        host: env.DB_HOST,
+        port: env.DB_PORT,
+        username: env.DB_USERNAME,
+        password: env.DB_PASSWORD,
+        database: env.DB_NAME,
+      }),
+
   entities: [join(__dirname, '..', '**', '*.entity.{ts,js}')],
   migrations: [join(__dirname, 'migrations', '*.{ts,js}')],
   synchronize: false,
